@@ -1,0 +1,72 @@
+---
+- name: Upgrade packages
+  apt:
+    update-cache: yes
+    upgrade: 'yes'
+  tags:
+    - apt
+
+- name: Install packages
+  apt:
+    pkg: {{ item }}
+    state: installed
+  with_items:
+    - cmake
+    - libmagickwand-dev
+    - build-essentials
+    - libraw1394-11
+    - libusb-1.0-0
+    - wpasupplicant
+    - gdb
+    - cmocka
+  tags:
+    - apt
+    - xapi
+
+- name: Create dl directory
+  file:
+    path: /root/dl
+    state: directory
+    recurse: yes
+  register: root_dl_dir
+  tags:
+    - dl
+    - xapi
+
+- name: Create src directory for XIMEA Linux Software Package
+  file:
+    path: /root/src/XIMEA_Linux_SP
+    state: directory
+    recurse: yes
+  register: ximea_src_dir
+  tags:
+    - source
+    - xapi
+
+- name: Download XIMEA Linux Software Package
+  get_url:
+    url: http://www.ximea.com/downloads/recent/XIMEA_Linux_SP.tgz
+    dest: /root/dl/XIMEA_Linux_SP.tgz
+    force: no
+  when: root_dl_dir
+  register: ximea_download
+  tags:
+    - xapi
+
+- name: Untar XIMEA Linux Software Package
+  unarchive:
+    copy: no
+    src: /root/dl/XIMEA_Linux_SP.tgz
+    dest: /root/src/XIMEA_Linux_SP
+  when: ximea_src_dir and ximea_download.changed
+  register: ximea_untar
+  tags:
+    - xapi
+
+- name: Install XIMEA Linux Software Package
+  shell: ./install
+  args:
+    chdir: /root/src/XIMEA_Linux_SP/package
+  when: ximea_untar.changed
+  tags:
+    - xapi

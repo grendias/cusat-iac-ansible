@@ -1,0 +1,5 @@
+---
+- hosts: dart
+  roles:
+    - upsat
+
