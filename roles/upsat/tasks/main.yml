@@ -32,6 +32,7 @@
     - wpasupplicant
     - gdb
     - cmocka
+    - watchdog
   tags:
     - apt
     - xapi
